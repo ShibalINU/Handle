@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Handle.ph — Find skilled help you can trust</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a href="#" class="logo" data-nav="home">Handle<span class="logo-dot">.ph</span></a>
+    <nav class="main-nav">
+      <button class="nav-link" data-nav="home">Home</button>
+      <button class="nav-link" data-nav="browse">Browse skills</button>
+      <button class="nav-link" data-nav="requests">My requests</button>
+    </nav>
+    <button class="nav-cta" data-nav="post">Post a skill</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- HOME -->
+  <section id="view-home" class="view">
+    <div class="hero-dark">
+      <div class="hero-glow" aria-hidden="true"></div>
+
+      <span class="float-badge badge-1">PLUMBING</span>
+      <span class="float-badge badge-2">TUTORING</span>
+      <span class="float-badge badge-3">EVENTS STAFF</span>
+
+      <div class="wrap hero">
+        <p class="eyebrow-free">Skilled work, sorted.</p>
+        <h1>Find someone who can<br>actually handle it.</h1>
+        <p class="hero-sub">Handle.ph connects people who need work done with tradespeople and freelancers across the Philippines — verified, nearby, and ready to take the job.</p>
+
+        <div class="hero-search-card">
+          <form id="hero-search-form">
+            <div class="search-row">
+              <input type="text" id="hero-search-input" placeholder="e.g. electrician, math tutor, aircon cleaning">
+              <button type="submit">Search</button>
+            </div>
+            <div class="chip-row" id="hero-chip-row"></div>
+          </form>
+        </div>
+
+        <div class="credibility-badge">
+          <div class="avatar-dot" aria-hidden="true">H</div>
+          <div>
+            <strong id="stat-listings">0</strong> skilled workers listed across <strong id="stat-categories">0</strong> categories
+          </div>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-panel-head">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            Handle Smart Match — scanning nearby listings in real time
+          </div>
+          <div class="preview-cards">
+            <div class="preview-card">
+              <span class="preview-card-tag">Best match</span>
+              <p class="preview-card-title">Aircon cleaning, Quezon City</p>
+              <p class="preview-card-sub">₱600/unit · 4 workers available today</p>
+            </div>
+            <div class="preview-card">
+              <span class="preview-card-tag">Fast reply</span>
+              <p class="preview-card-title">Math tutor, Grade 7–10</p>
+              <p class="preview-card-sub">₱350/hr · usually replies in 20 min</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap features-section">
+      <p class="section-eyebrow">Built for real work, done simply</p>
+      <h2>Everything you need to get a job handled</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Search by skill</h3>
+          <p>Filter by category, location, and keyword to find who's actually available near you.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📋</div>
+          <h3>Post in minutes</h3>
+          <p>List your skill, your rate, and your area — it's live in Browse skills right away.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3>Direct requests</h3>
+          <p>Send a message straight to a listing and keep track of every request you've sent.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🇵🇭</div>
+          <h3>Built for the PH</h3>
+          <p>Made for how work actually gets found and hired across Filipino communities.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BROWSE -->
+  <section id="view-browse" class="view" hidden>
+    <div class="wrap">
+      <div class="browse-head">
+        <h2>Browse skills</h2>
+        <p>Search or filter to find someone nearby who can take the job.</p>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="browse-search" placeholder="Search by skill, keyword, or name...">
+        <select id="browse-category">
+          <option value="">All categories</option>
+        </select>
+        <select id="browse-location">
+          <option value="">All locations</option>
+        </select>
+      </div>
+
+      <p class="result-count" id="result-count"></p>
+
+      <div class="listing-grid" id="listing-grid"></div>
+      <p class="empty-state" id="empty-state" hidden>No listings match that search yet. Try a different keyword, or <button class="link-btn" data-nav="post">post the skill yourself</button>.</p>
+    </div>
+  </section>
+
+  <!-- POST -->
+  <section id="view-post" class="view" hidden>
+    <div class="wrap wrap-narrow">
+      <div class="browse-head">
+        <h2>Post a skill</h2>
+        <p>List what you do. It goes live in Browse skills immediately.</p>
+      </div>
+
+      <form id="post-form" class="post-form">
+        <div class="field">
+          <label for="f-name">Your name</label>
+          <input type="text" id="f-name" required placeholder="Maria Santos">
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="f-category">Category</label>
+            <select id="f-category" required></select>
+          </div>
+          <div class="field">
+            <label for="f-location">Location</label>
+            <input type="text" id="f-location" required placeholder="Quezon City">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-title">Skill title</label>
+          <input type="text" id="f-title" required placeholder="e.g. Residential electrical repair">
+        </div>
+
+        <div class="field">
+          <label for="f-desc">Description</label>
+          <textarea id="f-desc" required rows="4" placeholder="What you do, your experience, and what makes you reliable."></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="f-rate">Rate</label>
+            <input type="text" id="f-rate" required placeholder="e.g. ₱500/hr or ₱1,500/job">
+          </div>
+          <div class="field">
+            <label for="f-contact">Contact number</label>
+            <input type="tel" id="f-contact" required placeholder="09XX XXX XXXX">
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn">Post this skill</button>
+        <p class="form-note" id="post-confirmation" hidden>Your skill is live. Check Browse skills to see it.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- REQUESTS -->
+  <section id="view-requests" class="view" hidden>
+    <div class="wrap wrap-narrow">
+      <div class="browse-head">
+        <h2>My requests</h2>
+        <p>Messages you've sent to listings, kept on this device.</p>
+      </div>
+      <div id="requests-list"></div>
+      <p class="empty-state" id="requests-empty" hidden>You haven't reached out to anyone yet. Browse skills and send a request to see it here.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- CONTACT MODAL -->
+<div class="modal-backdrop" id="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-labelledby="modal-title">
+    <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+    <h3 id="modal-title">Send a request</h3>
+    <p id="modal-sub"></p>
+    <form id="contact-form">
+      <div class="field">
+        <label for="c-name">Your name</label>
+        <input type="text" id="c-name" required placeholder="Your name">
+      </div>
+      <div class="field">
+        <label for="c-message">Message</label>
+        <textarea id="c-message" required rows="3" placeholder="Describe the job you need done."></textarea>
+      </div>
+      <button type="submit" class="submit-btn">Send request</button>
+    </form>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Handle.ph — a student prototype in support of UN SDG 8: Decent Work and Economic Growth.</p>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
