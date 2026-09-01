@@ -14,7 +14,7 @@
     <nav class="main-nav">
       <button class="nav-link" data-nav="home">Home</button>
       <button class="nav-link" data-nav="browse">Browse skills</button>
-      <button class="nav-link" data-nav="requests">My requests</button>
+      <button class="nav-link" data-nav="requests">My chats</button>
     </nav>
     <button class="nav-cta" data-nav="post">Post a skill</button>
   </div>
@@ -90,8 +90,8 @@
         </div>
         <div class="feature-card">
           <div class="feature-icon">💬</div>
-          <h3>Direct requests</h3>
-          <p>Send a message straight to a listing and keep track of every request you've sent.</p>
+          <h3>Chat directly</h3>
+          <p>Message a worker straight from their listing and keep every conversation in one place.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🇵🇭</div>
@@ -126,8 +126,6 @@
       <p class="empty-state" id="empty-state" hidden>No listings match that search yet. Try a different keyword, or <button class="link-btn" data-nav="post">post the skill yourself</button>.</p>
     </div>
   </section>
-
-  <!-- POST -->
   <section id="view-post" class="view" hidden>
     <div class="wrap wrap-narrow">
       <div class="browse-head">
@@ -179,36 +177,35 @@
     </div>
   </section>
 
-  <!-- REQUESTS -->
+  <!-- MY CHATS -->
   <section id="view-requests" class="view" hidden>
     <div class="wrap wrap-narrow">
       <div class="browse-head">
-        <h2>My requests</h2>
-        <p>Messages you've sent to listings, kept on this device.</p>
+        <h2>My chats</h2>
+        <p>Conversations you've started with workers, kept on this device.</p>
       </div>
       <div id="requests-list"></div>
-      <p class="empty-state" id="requests-empty" hidden>You haven't reached out to anyone yet. Browse skills and send a request to see it here.</p>
+      <p class="empty-state" id="requests-empty" hidden>You haven't messaged anyone yet. Browse skills and open a chat to see it here.</p>
     </div>
   </section>
 
 </main>
 
-<!-- CONTACT MODAL -->
+<!-- CHAT MODAL -->
 <div class="modal-backdrop" id="modal-backdrop" hidden>
-  <div class="modal" role="dialog" aria-labelledby="modal-title">
-    <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
-    <h3 id="modal-title">Send a request</h3>
-    <p id="modal-sub"></p>
-    <form id="contact-form">
-      <div class="field">
-        <label for="c-name">Your name</label>
-        <input type="text" id="c-name" required placeholder="Your name">
+  <div class="modal modal-chat" role="dialog" aria-labelledby="modal-title">
+    <button class="modal-close" id="modal-close" aria-label="Close chat">&times;</button>
+    <div class="chat-header">
+      <div class="chat-avatar" id="chat-avatar" aria-hidden="true"></div>
+      <div>
+        <h3 id="modal-title">Chat</h3>
+        <p id="modal-sub"></p>
       </div>
-      <div class="field">
-        <label for="c-message">Message</label>
-        <textarea id="c-message" required rows="3" placeholder="Describe the job you need done."></textarea>
-      </div>
-      <button type="submit" class="submit-btn">Send request</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <form id="contact-form" class="chat-input-row">
+      <input type="text" id="c-message" required placeholder="Type a message..." autocomplete="off">
+      <button type="submit" aria-label="Send message">Send</button>
     </form>
   </div>
 </div>

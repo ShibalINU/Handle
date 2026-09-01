@@ -17,8 +17,26 @@
     { id: "s8", name: "Grace Aquino", category: "Events Staffing", title: "Event coordinator & host crew", desc: "Team available for birthdays, corporate events, and weddings — coordination, hosting, setup.", rate: "₱3,000/event", location: "Pasay", contact: "0924 888 9900" }
   ];
 
+  // Some environments (e.g. sandboxed previews) block localStorage entirely.
+  // Detect that once, and fall back to an in-memory store so the app still works —
+  // it just won't persist across a page reload in that specific environment.
+  const memoryFallback = { listings: null, requests: null, chats: null };
+  let storageAvailable = true;
+  try {
+    const testKey = "__handleph_test__";
+    window.localStorage.setItem(testKey, "1");
+    window.localStorage.removeItem(testKey);
+  } catch (e) {
+    storageAvailable = false;
+    console.warn("Handle.ph: localStorage unavailable, using in-memory storage for this session.");
+  }
+
   const store = {
     getListings() {
+      if (!storageAvailable) {
+        if (!memoryFallback.listings) memoryFallback.listings = SEED_LISTINGS.slice();
+        return memoryFallback.listings;
+      }
       const raw = localStorage.getItem("handleph_listings");
       if (!raw) {
         localStorage.setItem("handleph_listings", JSON.stringify(SEED_LISTINGS));
@@ -27,15 +45,21 @@
       try { return JSON.parse(raw); } catch (e) { return SEED_LISTINGS.slice(); }
     },
     saveListings(list) {
+      if (!storageAvailable) { memoryFallback.listings = list; return; }
       localStorage.setItem("handleph_listings", JSON.stringify(list));
     },
-    getRequests() {
-      const raw = localStorage.getItem("handleph_requests");
-      if (!raw) return [];
-      try { return JSON.parse(raw); } catch (e) { return []; }
+    getChats() {
+      if (!storageAvailable) {
+        if (!memoryFallback.chats) memoryFallback.chats = {};
+        return memoryFallback.chats;
+      }
+      const raw = localStorage.getItem("handleph_chats");
+      if (!raw) return {};
+      try { return JSON.parse(raw); } catch (e) { return {}; }
     },
-    saveRequests(list) {
-      localStorage.setItem("handleph_requests", JSON.stringify(list));
+    saveChats(chats) {
+      if (!storageAvailable) { memoryFallback.chats = chats; return; }
+      localStorage.setItem("handleph_chats", JSON.stringify(chats));
     }
   };
 
@@ -141,14 +165,14 @@
         <p class="listing-desc">${escapeHtml(l.desc)}</p>
         <div class="listing-foot">
           <span class="listing-rate">${escapeHtml(l.rate)}</span>
-          <button class="contact-btn" data-id="${l.id}">Send request</button>
+          <button class="contact-btn" data-id="${l.id}">Chat now</button>
         </div>
       `;
       grid.appendChild(card);
     });
 
     grid.querySelectorAll(".contact-btn").forEach(btn => {
-      btn.addEventListener("click", () => openModal(btn.getAttribute("data-id")));
+      btn.addEventListener("click", () => openChat(btn.getAttribute("data-id")));
     });
   }
 
@@ -187,16 +211,55 @@
     document.getElementById("stat-listings").textContent = listings.length;
   });
 
-  // ---------- CONTACT MODAL ----------
+  // ---------- CHAT ----------
+  const CANNED_GREETINGS = [
+    "Hi! Thanks for reaching out — happy to help. What do you need done?",
+    "Hello! I saw you're interested in this listing. What's the job you have in mind?",
+    "Hi there! I'm available this week. Tell me more about what you need."
+  ];
+  const CANNED_REPLIES = [
+    "Got it, that sounds doable. When were you hoping to get this done?",
+    "Sure, I can take that on. What's the best area/address to meet you at?",
+    "Noted! I'll need a bit more detail — can you share your location and preferred schedule?",
+    "That works for me. I'll confirm the rate once I see the full scope on-site.",
+    "Understood. I'm usually free on weekdays after 2pm — does that fit your schedule?",
+    "Thanks for the details! I'll follow up shortly to lock in a time."
+  ];
+
+  function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function initials(name) {
+    return name.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase();
+  }
+
   let activeListingId = null;
-  function openModal(listingId) {
+
+  function openChat(listingId) {
     activeListingId = listingId;
     const listing = store.getListings().find(l => l.id === listingId);
     if (!listing) return;
-    document.getElementById("modal-title").textContent = "Send a request to " + listing.name;
+
+    const chats = store.getChats();
+    if (!chats[listingId]) {
+      chats[listingId] = {
+        listingTitle: listing.title,
+        listingName: listing.name,
+        listingContact: listing.contact,
+        messages: [
+          { from: "worker", text: pickRandom(CANNED_GREETINGS), time: new Date().toISOString() }
+        ]
+      };
+      store.saveChats(chats);
+    }
+
+    document.getElementById("chat-avatar").textContent = initials(listing.name);
+    document.getElementById("modal-title").textContent = listing.name;
     document.getElementById("modal-sub").textContent = listing.title + " · " + listing.rate;
     document.getElementById("modal-backdrop").hidden = false;
+    renderChatMessages(listingId);
+    document.getElementById("c-message").focus();
   }
+
   function closeModal() {
     document.getElementById("modal-backdrop").hidden = true;
     document.getElementById("contact-form").reset();
@@ -207,42 +270,105 @@
     if (e.target.id === "modal-backdrop") closeModal();
   });
 
+  function formatTime(iso) {
+    return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function renderChatMessages(listingId) {
+    const container = document.getElementById("chat-messages");
+    const chats = store.getChats();
+    const thread = chats[listingId];
+    if (!thread) return;
+    container.innerHTML = "";
+    thread.messages.forEach(m => {
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble " + (m.from === "user" ? "from-user" : "from-worker");
+      bubble.textContent = m.text;
+      container.appendChild(bubble);
+
+      const time = document.createElement("div");
+      time.className = "chat-time" + (m.from === "worker" ? " from-worker-time" : "");
+      time.textContent = formatTime(m.time);
+      container.appendChild(time);
+    });
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function showTypingIndicator() {
+    const container = document.getElementById("chat-messages");
+    const indicator = document.createElement("div");
+    indicator.className = "typing-indicator";
+    indicator.id = "typing-indicator";
+    indicator.innerHTML = "<span></span><span></span><span></span>";
+    container.appendChild(indicator);
+    container.scrollTop = container.scrollHeight;
+  }
+
   document.getElementById("contact-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    const listing = store.getListings().find(l => l.id === activeListingId);
-    if (!listing) return;
-    const requests = store.getRequests();
-    requests.unshift({
-      id: "r" + Date.now(),
-      listingTitle: listing.title,
-      listingName: listing.name,
-      listingContact: listing.contact,
-      fromName: document.getElementById("c-name").value.trim(),
-      message: document.getElementById("c-message").value.trim(),
-      time: new Date().toLocaleString()
-    });
-    store.saveRequests(requests);
-    closeModal();
-    showView("requests");
+    if (!activeListingId) return;
+    const input = document.getElementById("c-message");
+    const text = input.value.trim();
+    if (!text) return;
+
+    const chats = store.getChats();
+    const thread = chats[activeListingId];
+    if (!thread) return;
+
+    thread.messages.push({ from: "user", text, time: new Date().toISOString() });
+    store.saveChats(chats);
+    renderChatMessages(activeListingId);
+    input.value = "";
+
+    showTypingIndicator();
+    const listingIdAtSend = activeListingId;
+    setTimeout(() => {
+      // Only follow through if the same chat is still open (or just update storage either way)
+      const chatsNow = store.getChats();
+      const threadNow = chatsNow[listingIdAtSend];
+      if (!threadNow) return;
+      threadNow.messages.push({ from: "worker", text: pickRandom(CANNED_REPLIES), time: new Date().toISOString() });
+      store.saveChats(chatsNow);
+      if (activeListingId === listingIdAtSend) {
+        const indicator = document.getElementById("typing-indicator");
+        if (indicator) indicator.remove();
+        renderChatMessages(listingIdAtSend);
+      }
+    }, 1100 + Math.random() * 900);
   });
 
-  // ---------- REQUESTS ----------
+  // ---------- MY CHATS LIST ----------
   function renderRequests() {
     const list = document.getElementById("requests-list");
     const empty = document.getElementById("requests-empty");
-    const requests = store.getRequests();
+    const chats = store.getChats();
+    const ids = Object.keys(chats);
     list.innerHTML = "";
-    empty.hidden = requests.length !== 0;
-    requests.forEach(r => {
-      const item = document.createElement("div");
-      item.className = "request-item";
-      item.innerHTML = `
-        <h4>${escapeHtml(r.listingTitle)} — ${escapeHtml(r.listingName)}</h4>
-        <p>"${escapeHtml(r.message)}" — from ${escapeHtml(r.fromName)}</p>
-        <p class="request-time">Sent ${escapeHtml(r.time)} · reach them directly at ${escapeHtml(r.listingContact)}</p>
-      `;
-      list.appendChild(item);
-    });
+    empty.hidden = ids.length !== 0;
+
+    ids
+      .sort((a, b) => {
+        const aLast = chats[a].messages[chats[a].messages.length - 1].time;
+        const bLast = chats[b].messages[chats[b].messages.length - 1].time;
+        return new Date(bLast) - new Date(aLast);
+      })
+      .forEach(id => {
+        const thread = chats[id];
+        const lastMsg = thread.messages[thread.messages.length - 1];
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "chat-list-item";
+        item.innerHTML = `
+          <div class="chat-list-avatar">${escapeHtml(initials(thread.listingName))}</div>
+          <div class="chat-list-info">
+            <h4>${escapeHtml(thread.listingName)} — ${escapeHtml(thread.listingTitle)}</h4>
+            <p>${lastMsg.from === "user" ? "You: " : ""}${escapeHtml(lastMsg.text)}</p>
+          </div>
+          <div class="chat-list-time">${formatTime(lastMsg.time)}</div>
+        `;
+        item.addEventListener("click", () => openChat(id));
+        list.appendChild(item);
+      });
   }
 
   // ---------- INIT ----------
